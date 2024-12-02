@@ -36,7 +36,11 @@ def get_secret_phrases(show_phrases: bool = False) -> list[str]:
         str: The collected multi-line password.
     """
 
-    print("Enter secret phrases.  Enter an empty line to end.")
+    if show_phrases:
+        print("Enter secret phrases. Enter an empty line to end.")
+    else:
+        print("Enter secret phrases. Input will be hidden. Enter an empty line to end.")
+
     lines = []
     while True:
         # Get a line of the password without showing it on the console.
@@ -95,16 +99,10 @@ def main():
         description=HELP_STRING,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    ed_group = parser.add_mutually_exclusive_group(required=True)
-    ed_group.add_argument(
-        "-e", "--encrypt",
-        action="store_true",
-        help="Encrypt the input (cannot be used with --decrypt)",
-    )
-    ed_group.add_argument(
+    parser.add_argument(
         "-d", "--decrypt",
         action="store_true",
-        help="Decrypt the input (cannot be used with --encrypt)",
+        help="Decrypt the input (default is encryption)",
     )
     parser.add_argument(
         "--show-phrases",
@@ -112,9 +110,9 @@ def main():
         help="Display the secret phrases used to encrypt/decrypt",
     )
     parser.add_argument(
-        "--base64",
+        "--no-base64",
         action="store_true",
-        help="Encrypted data is base64 encoded",
+        help="Encrypted data is NOT base64 encoded",
     )
     parser.add_argument(
         "-i", "--input",
@@ -125,7 +123,7 @@ def main():
         help="Write output to a file instead of stdout",
     )
     parser.add_argument(
-        "--generate-key",
+        "--gen-key",
         action="store_true",
         help="Generate key and exit",
     )
@@ -142,31 +140,31 @@ def main():
         return
     fernet_key = generate_key(secrets)
 
-    if args.generate_key:
+    if args.gen_key:
         print(fernet_key.decode())
         return
 
     if not input_bytes:
         input_bytes = get_multiline_input().encode()
-    if args.encrypt:
+    if not args.decrypt:
         # Encrypt data using the given key.
         f = Fernet(fernet_key)
 
         encrypted_bytes = f.encrypt(input_bytes)
-        if args.base64:
+        if not args.no_base64:
             encrypted_bytes = base64.urlsafe_b64encode(encrypted_bytes)
 
         if args.output is not None:
             with open(args.output, "wb") as f:
                 f.write(encrypted_bytes)
         else:
-            print(encrypted_bytes)
+            print(encrypted_bytes.decode())
 
     elif args.decrypt:
         # Decrypt data using the given key.
         f = Fernet(fernet_key)
 
-        if args.base64:
+        if not args.no_base64:
             input_bytes = base64.urlsafe_b64decode(input_bytes)
         decrypted_bytes = f.decrypt(input_bytes)
 
