@@ -210,7 +210,15 @@ def main():
         if not args.no_base64:
             input_bytes = base64.urlsafe_b64decode(input_bytes)
 
-        decrypted_bytes = do_decrypt(fernet_key, input_bytes)
+        try:
+            decrypted_bytes = do_decrypt(fernet_key, input_bytes)
+        except Exception as e:
+            print()
+            if err := str(e):
+                print(f"!!! ERROR: {err}")
+            else:
+                print(f"!!! ERROR: {type(e).__name__}")
+            return
 
         if args.output is not None:
             with open(args.output, "wb") as f:
