@@ -79,6 +79,7 @@ def generate_key(phrases: list[str], length: int = 32) -> bytes:
       - all other strings are combined to form the salt
     """
 
+    salt = salt_from_phrases(phrases)
     last_key = b""
     for p in phrases:
         p = f"{last_key}{p}"
@@ -86,9 +87,8 @@ def generate_key(phrases: list[str], length: int = 32) -> bytes:
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA512(),
             length=length,
-            salt=salt_from_phrases(phrases),
-            iterations=100000,
-            backend=default_backend()
+            salt=salt,
+            iterations=480000,
         )
 
         last_key = base64.urlsafe_b64encode(kdf.derive(p.encode()))
