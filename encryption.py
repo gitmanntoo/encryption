@@ -12,7 +12,7 @@ from cryptography.hazmat.backends import default_backend
 
 
 HELP_STRING = """
-Encrypt and decrypt text using Python builtin Fernet.
+Encrypt or decrypt text using a series of phrases.
 
 You will be prompted for a series of secret phrases.
 - Order is important!
